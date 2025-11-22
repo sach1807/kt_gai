@@ -17,8 +17,6 @@ jobs:
 
     runs-on: ubuntu-latest
     
-    # We will REMOVE the top-level 'env' block and use the 'with' block below
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
