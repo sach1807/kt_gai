@@ -1,7 +1,6 @@
 name: Gemini Code Review Pipeline
 
 # 1. TRIGGER: Run this workflow whenever a pull request is opened or synchronized
-# This runs the review automatically when you open a PR or push new changes to it.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -25,7 +24,6 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gemini Code Review
-        # Uses the official Google GitHub Action to invoke the Gemini CLI
         uses: google-github-actions/run-gemini-cli@v1
         with:
           # Command instructing Gemini to analyze the code diff
@@ -33,5 +31,5 @@ jobs:
             /review
           # Securely inject the API key stored in the repository settings
           api_key: ${{ secrets.GEMINI_API_KEY }}
-          # Use the default GitHub token to authorize writing PR comments
+          # Use the default GitHub token to allow Gemini to post comments on the PR
           github_token: ${{ secrets.GITHUB_TOKEN }}
