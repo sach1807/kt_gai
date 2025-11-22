@@ -7,24 +7,32 @@ on:
 
 jobs:
   gemini_review:
-    # Do not run if the user is a bot (to prevent infinite loops)
+    # Permissions must be granted at the job level
+    permissions: 
+      contents: read
+      pull-requests: write # Allows the bot to post review comments
+
+    # Do not run if the user is the bot itself (prevents infinite loops)
     if: github.event.pull_request.user.type != 'Bot'
 
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # Fetch all history for accurate diff analysis by Gemini
           fetch-depth: 0
 
       - name: Run Gemini Code Review
-        uses: google-github-actions/run-gemini-cli@v1
+        # FIX: Using @main version
+        uses: google-github-actions/run-gemini-cli@main
         with:
-          # The '/review' command instructs Gemini to analyze the code diff
+          # --- FINAL FIX: Pass the API key directly to the tool via 'with' ---
+          api_key: ${{ secrets.GEMINI_API_KEY }} 
+          
+          # Command instructing Gemini to analyze the code diff
           command: |
             /review
-          # Securely injects the API key you stored as a Secret in GitHub Settings
-          api_key: ${{ secrets.GEMINI_API_KEY }}
-          # Use the default GitHub token to allow Gemini to post comments on the PR
+            
+          # We still need to pass the GitHub token for posting comments
           github_token: ${{ secrets.GITHUB_TOKEN }}
