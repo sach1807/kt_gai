@@ -17,10 +17,8 @@ jobs:
 
     runs-on: ubuntu-latest
     
-    # --- FINAL FIX: Pass the secret explicitly as an Environment Variable (env) ---
-    env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
+    # We will REMOVE the top-level 'env' block and use the 'with' block below
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -31,9 +29,12 @@ jobs:
         # FIX: Using @main version
         uses: google-github-actions/run-gemini-cli@main
         with:
+          # --- FINAL FIX: Pass the API key directly to the tool via 'with' ---
+          api_key: ${{ secrets.GEMINI_API_KEY }} 
+          
           # Command instructing Gemini to analyze the code diff
           command: |
             /review
-          # No need to explicitly pass 'api_key' in 'with' since it's in 'env'
+            
           # We still need to pass the GitHub token for posting comments
           github_token: ${{ secrets.GITHUB_TOKEN }}
