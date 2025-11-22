@@ -1,36 +1,36 @@
 name: Gemini Code Review Pipeline
 
-    # 1. TRIGGER: Run this workflow whenever a pull request is opened or synchronized
-    on:
-      pull_request:
-        types: [opened, synchronize, reopened]
+# 1. TRIGGER: Run this workflow whenever a pull request is opened or synchronized
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
-    jobs:
-      gemini_review:
-        # Explicitly grant permissions needed for checkout and posting comments
-        permissions: 
-          contents: read       # Needed to read the code files
-          pull-requests: write # ESSENTIAL FIX: Allows the bot to write review comments
+jobs:
+  gemini_review:
+    # --- IMPORTANT: Permissions must be granted at the job level
+    permissions: 
+      contents: read
+      pull-requests: write # ESSENTIAL: Allows the bot to post review comments
 
-        # Stop runs if the user is the bot itself (prevents infinite loops)
-        if: github.event.pull_request.user.type != 'Bot'
+    # Do not run if the user is the bot itself (prevents infinite loops)
+    if: github.event.pull_request.user.type != 'Bot'
 
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout Code
-            uses: actions/checkout@v4
-            with:
-              # Fetches all commit history for accurate diff analysis by Gemini
-              fetch-depth: 0
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Fetches all commit history for accurate diff analysis by Gemini
+          fetch-depth: 0
 
-          - name: Run Gemini Code Review
-            # --- FIX APPLIED HERE: Changed version from @v1 to @main (resolves "Unable to resolve action" error) ---
-            uses: google-github-actions/run-gemini-cli@main
-            with:
-              # Command instructing Gemini to analyze the code diff
-              command: |
-                /review
-              # Securely inject the API key stored in the repository settings
-              api_key: ${{ secrets.GEMINI_API_KEY }}
-              # Use the default GitHub token to authorize writing PR comments
-              github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Gemini Code Review
+        # FIX: Changed version from @v1 to @main (resolves "Unable to resolve action" error)
+        uses: google-github-actions/run-gemini-cli@main
+        with:
+          # Command instructing Gemini to analyze the code diff
+          command: |
+            /review
+          # Securely inject the API key stored in the repository settings
+          api_key: ${{ secrets.GEMINI_API_KEY }}
+          # Use the default GitHub token to authorize writing PR comments
+          github_token: ${{ secrets.GITHUB_TOKEN }}
